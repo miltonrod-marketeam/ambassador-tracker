@@ -16,7 +16,8 @@ async function call(path, { method = 'GET', body } = {}) {
 
 export function remoteAdapter() {
   return {
-    session: () => call('/api/session').then((r) => r.ok),
+    session: () => call('/api/session'),
+    setup: (password) => call('/api/setup', { method: 'POST', body: { password } }),
     login: (password) => call('/api/login', { method: 'POST', body: { password } }),
     logout: () => call('/api/logout', { method: 'POST' }),
     load: () => call('/api/data'),
@@ -59,8 +60,8 @@ export function demoAdapter() {
   const upsert = (list, items) => { const m = new Map(list.map((x) => [x.id, x])); items.forEach((x) => m.set(x.id, x)); return [...m.values()]; };
   const ok = async () => ({ ok: true });
   return {
-    session: async () => true,
-    login: ok, logout: ok,
+    session: async () => ({ ok: true }),
+    setup: ok, login: ok, logout: ok,
     load: async () => JSON.parse(JSON.stringify(db)),
     saveTasks: async (tasks) => { db.tasks = upsert(db.tasks, tasks); save(); },
     deleteTask: async (id) => { db.tasks = db.tasks.filter((t) => t.id !== id); save(); },

@@ -37,23 +37,37 @@ function useTheme() {
   return [theme, () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))];
 }
 
-function Login({ adapter, onDone, theme, toggleTheme }) {
-  const [pw, setPw] = useState(''); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
+function Login({ adapter, setup, onDone, theme, toggleTheme }) {
+  const [pw, setPw] = useState(''); const [pw2, setPw2] = useState('');
+  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
+  const [show, setShow] = useState(false);
+  const tooShort = setup && pw.length > 0 && pw.length < 8;
+  const mismatch = setup && pw2.length > 0 && pw !== pw2;
+  const ready = setup ? pw.length >= 8 && pw === pw2 : pw.length > 0;
   return (
     <div className="login">
       <form className="login-card" onSubmit={async (e) => {
-        e.preventDefault(); setBusy(true); setErr('');
-        try { await adapter.login(pw); onDone(); } catch (x) { setErr(x.message); }
+        e.preventDefault(); if (!ready) return; setBusy(true); setErr('');
+        try { await (setup ? adapter.setup(pw) : adapter.login(pw)); onDone(); } catch (x) { setErr(x.message); }
         setBusy(false);
       }}>
         <div className="brand-mark big"><Award size={28} /></div>
         <h1>Ambassador Growth Tracker</h1>
-        <p className="muted">Entra con tu contraseña. Este dispositivo queda recordado por 90 días.</p>
-        <label className="field" htmlFor="pw"><span className="field-label">Contraseña</span>
-          <input id="pw" type="password" className="input" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus autoComplete="current-password" />
+        <p className="muted">{setup ? 'Es tu primera vez aquí. Crea la contraseña con la que vas a entrar desde cualquier dispositivo.' : 'Entra con tu contraseña. Este dispositivo queda recordado por 90 días.'}</p>
+        <label className="field" htmlFor="pw"><span className="field-label">{setup ? 'Crea tu contraseña' : 'Contraseña'}{setup && <em>mínimo 8 caracteres</em>}</span>
+          <input id="pw" type={show ? 'text' : 'password'} className="input" value={pw} onChange={(e) => setPw(e.target.value)} autoFocus autoComplete={setup ? 'new-password' : 'current-password'} />
         </label>
+        {setup && (
+          <label className="field" htmlFor="pw2"><span className="field-label">Repítela</span>
+            <input id="pw2" type={show ? 'text' : 'password'} className="input" value={pw2} onChange={(e) => setPw2(e.target.value)} autoComplete="new-password" />
+          </label>
+        )}
+        <label className="check"><input id="pw_show" type="checkbox" checked={show} onChange={(e) => setShow(e.target.checked)} /> Mostrar contraseña</label>
+        {tooShort && <p className="err">Usa al menos 8 caracteres.</p>}
+        {mismatch && <p className="err">Las dos contraseñas no coinciden.</p>}
         {err && <p className="err">{err}</p>}
-        <button className="btn primary big-btn" disabled={!pw || busy}>{busy ? <Loader2 size={16} className="spin" /> : <Lock size={16} />} Entrar</button>
+        <button className="btn primary big-btn" disabled={!ready || busy}>{busy ? <Loader2 size={16} className="spin" /> : <Lock size={16} />} {setup ? 'Crear contraseña y entrar' : 'Entrar'}</button>
+        {setup && <p className="small muted">Guárdala en tu gestor de contraseñas. Si la pierdes se restablece desde Vercel, sin perder tus datos.</p>}
         <button type="button" className="icon-btn theme-corner" onClick={toggleTheme} aria-label="Cambiar tema">{theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}</button>
       </form>
     </div>
@@ -64,10 +78,11 @@ export default function App() {
   const adapter = useMemo(() => (IS_DEMO ? demoAdapter() : remoteAdapter()), []);
   const [theme, toggleTheme] = useTheme();
   const [auth, setAuth] = useState('checking');
-  useEffect(() => { adapter.session().then((ok) => setAuth(ok ? 'ok' : 'login')).catch(() => setAuth('ok')); }, [adapter]);
-  const lost = useCallback(() => setAuth('login'), []);
+  const [setup, setSetup] = useState(false);
+  useEffect(() => { adapter.session().then((r) => { setSetup(!!r.setup); setAuth(r.ok ? 'ok' : 'login'); }).catch(() => setAuth('ok')); }, [adapter]);
+  const lost = useCallback(() => { setSetup(false); setAuth('login'); }, []);
   if (auth === 'checking') return <div className="splash"><Loader2 className="spin" /></div>;
-  if (auth === 'login') return <Login adapter={adapter} onDone={() => setAuth('ok')} theme={theme} toggleTheme={toggleTheme} />;
+  if (auth === 'login') return <Login adapter={adapter} setup={setup} onDone={() => setAuth('ok')} theme={theme} toggleTheme={toggleTheme} />;
   return <Dashboard adapter={adapter} onAuthLost={lost} theme={theme} toggleTheme={toggleTheme} />;
 }
 

@@ -2,7 +2,7 @@ import { redis, K, guard, hsetMany } from './_lib.js';
 
 // Restaura una copia completa: reemplaza tareas, ideas y ajustes.
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
   const { tasks = [], ideas = [], settings } = req.body || {};
   await redis.del(K.tasks, K.ideas);

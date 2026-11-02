@@ -4,7 +4,7 @@ import { guard } from './_lib.js';
 export const config = { api: { bodyParser: { sizeLimit: '4mb' } } };
 
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
   if (req.method === 'POST') {
     const m = /^data:(image\/[a-z+]+);base64,(.+)$/i.exec(req.body?.dataUrl || '');
     if (!m) return res.status(400).json({ error: 'La imagen no tiene un formato válido.' });

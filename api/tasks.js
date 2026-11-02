@@ -1,7 +1,7 @@
 import { redis, K, guard, parse, hsetMany } from './_lib.js';
 
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
   if (req.method === 'PUT') {
     const { tasks = [], month } = req.body || {};
     if (month) {
