@@ -79,14 +79,15 @@ export default function App() {
   const [theme, toggleTheme] = useTheme();
   const [auth, setAuth] = useState('checking');
   const [setup, setSetup] = useState(false);
-  useEffect(() => { adapter.session().then((r) => { setSetup(!!r.setup); setAuth(r.ok ? 'ok' : 'login'); }).catch(() => setAuth('ok')); }, [adapter]);
+  const [open, setOpen] = useState(false);
+  useEffect(() => { adapter.session().then((r) => { setSetup(!!r.setup); setOpen(!!r.open); setAuth(r.ok ? 'ok' : 'login'); }).catch(() => setAuth('ok')); }, [adapter]);
   const lost = useCallback(() => { setSetup(false); setAuth('login'); }, []);
   if (auth === 'checking') return <div className="splash"><Loader2 className="spin" /></div>;
   if (auth === 'login') return <Login adapter={adapter} setup={setup} onDone={() => setAuth('ok')} theme={theme} toggleTheme={toggleTheme} />;
-  return <Dashboard adapter={adapter} onAuthLost={lost} theme={theme} toggleTheme={toggleTheme} />;
+  return <Dashboard adapter={adapter} canLogout={!open} onAuthLost={lost} theme={theme} toggleTheme={toggleTheme} />;
 }
 
-function Dashboard({ adapter, onAuthLost, theme, toggleTheme }) {
+function Dashboard({ adapter, canLogout, onAuthLost, theme, toggleTheme }) {
   const { data, sync, actions } = useTracker(adapter, { onAuthLost });
   const [tab, setTab] = useState(() => (location.hash.slice(1) && TABS.some((t) => t.id === location.hash.slice(1)) ? location.hash.slice(1) : 'sim'));
   const [filters, setFilters] = useState(NO_FILTERS);
@@ -205,7 +206,7 @@ function Dashboard({ adapter, onAuthLost, theme, toggleTheme }) {
             <button type="button" className="icon-btn" onClick={() => importRef.current?.click()} title="Restaurar copia .json" aria-label="Restaurar copia"><Upload size={17} /></button>
             <input ref={importRef} type="file" accept=".json,application/json" hidden onChange={(e) => { if (e.target.files[0]) importBackup(e.target.files[0]); e.target.value = ''; }} />
             <button type="button" className="icon-btn" onClick={toggleTheme} aria-label="Cambiar tema">{theme === 'light' ? <Moon size={17} /> : <Sun size={17} />}</button>
-            {!IS_DEMO && <button type="button" className="icon-btn" onClick={async () => { await adapter.logout(); onAuthLost(); }} aria-label="Cerrar sesión"><LogOut size={17} /></button>}
+            {!IS_DEMO && canLogout && <button type="button" className="icon-btn" onClick={async () => { await adapter.logout(); onAuthLost(); }} aria-label="Cerrar sesión"><LogOut size={17} /></button>}
           </div>
         </div>
       </header>

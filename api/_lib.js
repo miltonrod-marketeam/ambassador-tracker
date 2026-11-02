@@ -31,7 +31,11 @@ export function readCookie(req, name) {
   return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
 }
 
+// Acceso abierto por defecto. Para volver a pedir contraseña: variable REQUIRE_PASSWORD=1 en Vercel.
+export const OPEN = process.env.REQUIRE_PASSWORD !== '1';
+
 export async function isAuthed(req) {
+  if (OPEN) return true;
   const token = readCookie(req, COOKIE);
   if (!token) return false;
   const [exp, sig] = token.split('.');
