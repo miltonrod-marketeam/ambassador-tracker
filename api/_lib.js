@@ -10,8 +10,18 @@ export const K = { tasks: 'agt:tasks', ideas: 'agt:ideas', settings: 'agt:settin
 const COOKIE = 'agt_session';
 const MAX_AGE = 60 * 60 * 24 * 90; // 90 días
 
-const secret = () => process.env.SESSION_SECRET || '';
-const hmac = (v) => crypto.createHmac('sha256', secret()).update(v).digest('hex');
+let secretCache = process.env.SESSION_SECRET || '';
+async function getSecret() {
+  if (secretCache) return secretCache;
+  let s = await redis.get('agt:secret');
+  if (!s) {
+    await redis.set('agt:secret', crypto.randomBytes(32).toString('hex'), { nx: true });
+    s = await redis.get('agt:secret');
+  }
+  secretCache = String(s);
+  return secretCache;
+}
+const hmac = (v, key) => crypto.createHmac('sha256', key).update(v).digest('hex');
 
 export const parse = (v) => (typeof v === 'string' ? JSON.parse(v) : v);
 
@@ -21,19 +31,18 @@ export function readCookie(req, name) {
   return hit ? decodeURIComponent(hit.slice(name.length + 1)) : null;
 }
 
-export function isAuthed(req) {
-  if (!secret()) return false;
+export async function isAuthed(req) {
   const token = readCookie(req, COOKIE);
   if (!token) return false;
   const [exp, sig] = token.split('.');
   if (!exp || !sig || Number(exp) < Date.now()) return false;
-  const good = hmac(exp);
+  const good = hmac(exp, await getSecret());
   return sig.length === good.length && crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(good));
 }
 
-export function setSession(res) {
+export async function setSession(res) {
   const exp = String(Date.now() + MAX_AGE * 1000);
-  const token = `${exp}.${hmac(exp)}`;
+  const token = `${exp}.${hmac(exp, await getSecret())}`;
   res.setHeader('Set-Cookie', `${COOKIE}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${MAX_AGE}`);
 }
 
@@ -41,18 +50,38 @@ export function clearSession(res) {
   res.setHeader('Set-Cookie', `${COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`);
 }
 
-export function guard(req, res) {
-  if (!isAuthed(req)) {
+export async function guard(req, res) {
+  if (!(await isAuthed(req))) {
     res.status(401).json({ error: 'Tu sesión expiró. Vuelve a entrar con tu contraseña.' });
     return false;
   }
   return true;
 }
 
-export function samePassword(input) {
-  const a = crypto.createHash('sha256').update(String(input || '')).digest();
-  const b = crypto.createHash('sha256').update(String(process.env.APP_PASSWORD || '')).digest();
-  return !!process.env.APP_PASSWORD && crypto.timingSafeEqual(a, b);
+// Contraseña creada por el usuario: se guarda solo su huella (scrypt con sal).
+const AUTH_KEY = 'agt:auth';
+export const hasPassword = async () => !!(await redis.get(AUTH_KEY)) || !!process.env.APP_PASSWORD;
+
+export async function createPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.scryptSync(String(password), salt, 64).toString('hex');
+  const res = await redis.set(AUTH_KEY, `${salt}:${hash}`, { nx: true });
+  return res !== null; // false si alguien ya la había creado
+}
+
+export async function checkPassword(input) {
+  const pw = String(input || '');
+  if (process.env.APP_PASSWORD) {
+    const a = crypto.createHash('sha256').update(pw).digest();
+    const b = crypto.createHash('sha256').update(process.env.APP_PASSWORD).digest();
+    if (crypto.timingSafeEqual(a, b)) return true;
+  }
+  const stored = await redis.get(AUTH_KEY);
+  if (!stored) return false;
+  const [salt, hash] = String(stored).split(':');
+  const test = crypto.scryptSync(pw, salt, 64);
+  const good = Buffer.from(hash, 'hex');
+  return test.length === good.length && crypto.timingSafeEqual(test, good);
 }
 
 export async function hsetMany(key, items) {

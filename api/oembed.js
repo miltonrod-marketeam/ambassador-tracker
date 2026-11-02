@@ -1,7 +1,7 @@
 import { guard } from './_lib.js';
 
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
   const url = String(req.query.url || '');
   if (!/^https:\/\/(www\.)?(x|twitter)\.com\//i.test(url)) {
     return res.status(400).json({ error: 'Pega un enlace de X que empiece con https://x.com/' });

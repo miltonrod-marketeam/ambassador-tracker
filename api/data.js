@@ -1,7 +1,7 @@
 import { redis, K, guard, parse } from './_lib.js';
 
 export default async function handler(req, res) {
-  if (!guard(req, res)) return;
+  if (!(await guard(req, res))) return;
   res.setHeader('Cache-Control', 'no-store');
   const [tasks, ideas, settings] = await Promise.all([
     redis.hgetall(K.tasks), redis.hgetall(K.ideas), redis.get(K.settings),
