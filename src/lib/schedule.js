@@ -28,6 +28,23 @@ export function monthDays(month) {
 export const monthLabel = (month) => { const [y, m] = month.split('-').map(Number); return `${MONTHS[m - 1]} ${y}`; };
 export const shiftMonth = (month, delta) => { const [y, m] = month.split('-').map(Number); const d = new Date(y, m - 1 + delta, 1); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; };
 
+// Las tareas con views necesitan 1 semana para llegar a la meta, más 2 días de colchón
+// para tomar la captura y subirla antes de que cierre el mes.
+export const VIEWS_WEEK = 7;
+export const VIEWS_MARGIN = 2;
+const iso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export function addDays(s, n) { const d = parseDate(s); d.setDate(d.getDate() + n); return iso(d); }
+export function viewsInfo(t) {
+  if (!t.requiresViews || !t.dateStr) return null;
+  const due = addDays(t.dateStr, VIEWS_WEEK);
+  const [y, m] = t.dateStr.split('-').map(Number);
+  const total = new Date(y, m, 0).getDate();
+  const last = `${y}-${pad(m)}-${pad(total)}`;
+  const latest = `${y}-${pad(m)}-${pad(total - VIEWS_WEEK - VIEWS_MARGIN)}`;
+  const risk = due > last ? 'late' : t.dateStr > latest ? 'tight' : null;
+  return { due, last, latest, risk };
+}
+
 export function newTask(code, dateStr, extra = {}) {
   const t = TASK_BY_CODE[code];
   const base = {
@@ -44,7 +61,7 @@ const ORDER = ['12', '11', '10', '05', '04', '06', '01', '03', '13', '14', '07',
 export function generateMonth(month, cfg) {
   const days = monthDays(month);
   const work = days.filter((d) => { const w = dayInfo(d).dow; return w >= 1 && w <= 5; });
-  const cutoff = days.length - 7; // los posts con views necesitan 1 semana dentro del mes
+  const cutoff = days.length - VIEWS_WEEK - VIEWS_MARGIN; // views: 1 semana + 2 días de colchón antes de cerrar el mes
   const items = [];
 
   const tg = cfg.task02_tg || 0; const dc = cfg.task02_dc || 0;

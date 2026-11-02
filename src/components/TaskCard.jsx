@@ -1,6 +1,6 @@
-import { Trash2, Pencil, Copy, ExternalLink, Camera, CheckCircle2, Send, MessageSquare } from 'lucide-react';
+import { Trash2, Pencil, Copy, ExternalLink, Camera, CheckCircle2, Send, MessageSquare, AlertTriangle, CalendarCheck } from 'lucide-react';
 import { STATUSES, TASK_BY_CODE, catOf } from '../lib/constants';
-import { dayInfo, todayIso, hasImages } from '../lib/schedule';
+import { dayInfo, todayIso, hasImages, viewsInfo } from '../lib/schedule';
 import { Stamp } from './ui';
 
 const href = (l) => (l.startsWith('http') ? l : `https://${l}`);
@@ -9,6 +9,7 @@ export default function TaskCard({ t, onEdit, onDelete, onStatus, onToggle, onCo
   const info = dayInfo(t.dateStr);
   const cat = catOf(t.taskCode);
   const comm = t.taskCode === '02';
+  const vi = viewsInfo(t);
   const pct = t.requiresViews ? Math.min(100, ((t.views || 0) / (t.targetViews || 300)) * 100) : 0;
   return (
     <article className={`card ${t.dateStr === todayIso() ? 'is-today' : ''} ${t.status === 'Completado' || t.status === 'Brandchamp' ? 'is-done' : ''}`} data-cat={cat}>
@@ -60,6 +61,7 @@ export default function TaskCard({ t, onEdit, onDelete, onStatus, onToggle, onCo
         <div className="views">
           <div className="views-row"><span>Views en 1 semana</span><b className="num">{t.views || 0} / {t.targetViews || 300}</b></div>
           <div className="bar" data-tone={pct >= 100 ? 'ok' : 'warn'}><i style={{ width: `${pct}%` }} /></div>
+          {vi && <div className={`views-due ${vi.risk || ''}`}>{vi.risk === 'late' ? <AlertTriangle size={12} /> : <CalendarCheck size={12} />} Cumple la semana el {dayInfo(vi.due).display}{vi.risk === 'late' ? ' · después del cierre del mes' : vi.risk === 'tight' ? ' · sin colchón para la captura' : ''}</div>}
         </div>
       )}
 

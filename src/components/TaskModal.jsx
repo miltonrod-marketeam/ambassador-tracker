@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Camera, Trash2, Search, FileText, Copy, Loader2 } from 'lucide-react';
 import { TASKS, TASK_BY_CODE, STATUSES, catOf } from '../lib/constants';
-import { autoStatus, dayInfo } from '../lib/schedule';
+import { autoStatus, dayInfo, viewsInfo } from '../lib/schedule';
 import { compressImage } from '../lib/files';
 import { Modal, Field } from './ui';
 
@@ -50,6 +50,7 @@ export default function TaskModal({ task, isNew, actions, onSave, onDelete, onDo
   };
 
   const info = d.dateStr ? dayInfo(d.dateStr) : null;
+  const vi = viewsInfo(d);
 
   return (
     <Modal wide cat={catOf(d.taskCode)} eyebrow={isNew ? 'Nueva tarea' : `${d.taskCode} · ${info ? `Semana ${info.week}, ${info.dayName}` : ''}`}
@@ -121,6 +122,13 @@ export default function TaskModal({ task, isNew, actions, onSave, onDelete, onDo
           <input id="m_topic" className="input" value={d.topic || ''} onChange={(e) => set({ topic: e.target.value })} />
         </Field>
 
+        {vi?.risk && (
+          <div className="views-warn" role="alert">
+            <b>{vi.risk === 'late' ? 'La semana de views se pasa del mes.' : 'Queda sin colchón para la captura.'}</b>
+            <span> Publicada el {dayInfo(d.dateStr).display}, llega a la meta el {dayInfo(vi.due).display} y el mes cierra el {dayInfo(vi.last).display}. Prográmala a más tardar el {dayInfo(vi.latest).display}.</span>
+            <button type="button" className="chip-btn" onClick={() => set({ dateStr: vi.latest })}>Mover al {dayInfo(vi.latest).display}</button>
+          </div>
+        )}
         {d.requiresViews && (
           <Field label="Views acumuladas" hint={`meta ${d.targetViews || 300} en 1 semana`} id="m_views">
             <input id="m_views" type="number" min="0" className="input num" value={d.views || 0} onChange={(e) => set({ views: Number(e.target.value) })} />

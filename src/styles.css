@@ -547,3 +547,8 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius
 
 .check { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--ink-2); cursor: pointer; }
 .check input { width: 17px; height: 17px; accent-color: var(--accent); }
+
+.views-due { display: flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.views-due.tight { color: color-mix(in srgb, var(--warn) 70%, var(--ink)); }
+.views-due.late { color: var(--bad); }
+.views-warn { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 10px 12px; border: 2px solid var(--warn); border-radius: 11px; background: color-mix(in srgb, var(--warn) 14%, var(--paper)); font-size: 13px; }

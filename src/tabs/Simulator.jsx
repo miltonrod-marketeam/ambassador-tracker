@@ -1,9 +1,9 @@
 import { RotateCcw, Sparkles, Eraser } from 'lucide-react';
-import { SLIDER_GROUPS, CATS, TIERS, ZERO_CFG, CORE_CFG, catOf, tierFor } from '../lib/constants';
+import { SLIDER_GROUPS, CATS, TIERS, CORE_CFG, catOf, tierFor } from '../lib/constants';
 import { simTotal, monthLabel } from '../lib/schedule';
 import { CountUp } from '../components/ui';
 
-export default function Simulator({ cfg, month, onCfg, onGenerate }) {
+export default function Simulator({ cfg, month, onCfg, onGenerate, onZero }) {
   const { by, total } = simTotal(cfg);
   const tier = tierFor(total);
   const maxCat = Math.max(1, ...Object.values(by));
@@ -40,7 +40,7 @@ export default function Simulator({ cfg, month, onCfg, onGenerate }) {
           </div>
         ))}
         <div className="row-wrap">
-          <button type="button" className="btn ghost" onClick={() => onCfg({ ...ZERO_CFG })}><Eraser size={15} /> Todo en cero</button>
+          <button type="button" className="btn ghost" onClick={onZero}><Eraser size={15} /> Todo en cero</button>
           <button type="button" className="btn ghost" onClick={() => onCfg({ ...CORE_CFG })}><RotateCcw size={15} /> Solo mínimos</button>
         </div>
       </div>

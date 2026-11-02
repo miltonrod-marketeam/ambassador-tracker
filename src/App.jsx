@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Award, Moon, Sun, Download, Upload, LogOut, Cloud, CloudOff, Loader2, Sliders, CalendarDays, Layers, Lightbulb, ListPlus, ShieldCheck, BookOpen, Plus, Lock } from 'lucide-react';
 import { IS_DEMO, remoteAdapter, demoAdapter } from './lib/api';
 import { useTracker } from './lib/store';
-import { TASK_BY_CODE, tierIndex } from './lib/constants';
+import { TASK_BY_CODE, tierIndex, ZERO_CFG } from './lib/constants';
 import { generateMonth, newTask, earned, projected, monthLabel, todayIso, currentMonth } from './lib/schedule';
 import { normalizeBackup, downloadFile, downloadDoc, taskHtml, reportHtml, copyRich, copyText } from './lib/files';
 import { CountUp, Toast, Confirm, Confetti } from './components/ui';
@@ -239,6 +239,20 @@ function Dashboard({ adapter, onAuthLost, theme, toggleTheme }) {
         <div className="view" key={tab}>
           {tab === 'sim' && (
             <Simulator cfg={cfg} month={month} onCfg={(c) => actions.setSettings({ cfg: c })}
+              onZero={() => {
+                const wipe = () => {
+                  monthTasks.forEach((t) => (t.images || []).forEach(actions.removeImage));
+                  actions.replaceMonth(month, []);
+                  actions.setSettings({ cfg: { ...ZERO_CFG } }, { immediate: true });
+                  notify('Todo quedó en cero y el mes está vacío');
+                };
+                if (!monthTasks.length) { actions.setSettings({ cfg: { ...ZERO_CFG } }); return; }
+                setConfirm({
+                  title: `Vaciar ${monthLabel(month)}`, confirmLabel: 'Sí, borrar todo',
+                  text: `Se ponen todos los valores en cero y se eliminan las ${monthTasks.length} tareas de este mes, con sus capturas, enlaces y puntos. No se puede deshacer. Tus ideas y los otros meses no se tocan.`,
+                  onConfirm: wipe,
+                });
+              }}
               onGenerate={() => setConfirm({
                 title: `Generar parrilla de ${monthLabel(month)}`, danger: false, confirmLabel: 'Generar',
                 text: monthTasks.length ? `Se reemplazan las ${monthTasks.length} tareas de este mes, incluidas sus capturas y estados. Los otros meses no se tocan.` : 'Se crean las tareas del mes según tu escenario.',
