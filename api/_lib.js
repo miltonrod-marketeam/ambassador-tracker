@@ -60,7 +60,9 @@ export async function guard(req, res) {
 
 // Contraseña creada por el usuario: se guarda solo su huella (scrypt con sal).
 const AUTH_KEY = 'agt:auth';
-export const hasPassword = async () => !!(await redis.get(AUTH_KEY)) || !!process.env.APP_PASSWORD;
+// Solo cuenta la contraseña creada en la app. APP_PASSWORD (si existe) es un acceso de emergencia
+// y no impide que la primera vez puedas crear la tuya.
+export const hasPassword = async () => !!(await redis.get(AUTH_KEY));
 
 export async function createPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
