@@ -31,18 +31,18 @@ export const TASK_BY_CODE = Object.fromEntries(TASKS.map((t) => [t.code, t]));
 export const catOf = (code) => TASK_BY_CODE[code]?.cat || 'special';
 
 export const SLIDER_GROUPS = [
-  { title: 'Comunidad y gobernanza', rows: [
+  { title: 'Comunidad y gobernanza', cat: 'community', rows: [
     { key: 'task01', code: '01', label: 'Like, Comment & Quote Tweet', pts: 10, max: 20, hint: '10 pts por ronda · mín. 2 por semana' },
     { key: 'task02_tg', code: '02', label: 'Días activos en Telegram', pts: 1, max: 23, hint: '1 pt por día · mín. 1 por semana' },
     { key: 'task02_dc', code: '02', label: 'Días activos en Discord', pts: 1, max: 23, hint: '1 pt por día · mín. 1 por semana' },
     { key: 'task03', code: '03', label: 'Governance Feedback', pts: 10, max: 5, hint: '10 pts cada uno · mín. 1 al mes' },
   ] },
-  { title: 'Contenido y video', rows: [
+  { title: 'Contenido y video', cat: 'video', rows: [
     { key: 'task04', code: '04', label: 'Educational Content', pts: 30, max: 16, hint: '30 pts · mín. 4, máx. 16 al mes · 300 views' },
     { key: 'task05', code: '05', label: 'Explainer Video (≤5 min)', pts: 70, max: 4, hint: '70 pts · máx. 4 al mes · 300 views' },
     { key: 'task06', code: '06', label: 'Weekly Ecosystem Update', pts: 35, max: 12, hint: '35 pts · mín. 2, máx. 12 al mes' },
   ] },
-  { title: 'Institucional y eventos', rows: [
+  { title: 'Institucional y eventos', cat: 'institutional', rows: [
     { key: 'task07', code: '07', label: 'Institutional Convos (set de 3)', pts: 15, max: 10, hint: '15 pts por set de 3 reuniones' },
     { key: 'task08', code: '08', label: 'Institutional Lead', pts: 10, max: 10, hint: '10 pts por lead calificado' },
     { key: 'task09', code: '09', label: 'Asistir a evento Bitcoin/DeFi', pts: 40, max: 5, hint: '40 pts · mín. 2 al mes' },
@@ -50,7 +50,7 @@ export const SLIDER_GROUPS = [
     { key: 'task11', code: '11', label: 'Co-host / speaker online', pts: 60, max: 4, hint: '60 pts · máx. 4 al mes · ≥30 min' },
     { key: 'task12', code: '12', label: 'Co-host / speaker presencial', pts: 100, max: 3, hint: '100 pts por evento presencial' },
   ] },
-  { title: 'Crecimiento y especiales', rows: [
+  { title: 'Crecimiento y especiales', cat: 'social', rows: [
     { key: 'task13', code: '13', label: 'New Verified Staker', pts: 80, max: 10, hint: '80 pts por staker nuevo ($10+ USD)' },
     { key: 'task14', code: '14', label: 'New Member Referral', pts: 20, max: 10, hint: '20 pts por miembro activo referido' },
     { key: 'task15', code: '15', label: 'Task of the Week', pts: 20, max: 5, hint: '20 pts · máx. 4 al mes' },

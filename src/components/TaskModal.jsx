@@ -46,7 +46,7 @@ export default function TaskModal({ task, isNew, actions, onSave, onDelete, onDo
 
   const final = () => {
     const { linksText, ...rest } = d;
-    return autoStatus({ ...rest, links, points: comm ? rest.points : Number(rest.points) || 0 });
+    return autoStatus({ ...rest, links, points: comm ? rest.points : Number(rest.points) || 0 }, isNew ? null : task);
   };
 
   const info = d.dateStr ? dayInfo(d.dateStr) : null;
@@ -58,7 +58,7 @@ export default function TaskModal({ task, isNew, actions, onSave, onDelete, onDo
       footer={<>
         {!isNew && <button type="button" className="btn danger-ghost" onClick={() => onDelete(task)}><Trash2 size={15} /> Eliminar</button>}
         {!isNew && <button type="button" className="btn ghost" onClick={() => onDoc(final())}><FileText size={15} /> .doc</button>}
-        {!isNew && <button type="button" className="btn ghost" onClick={() => onCopy(final())}><Copy size={15} /> Copiar ficha</button>}
+        {!isNew && <button type="button" className="btn ghost" onClick={() => onCopy(final())}><Copy size={15} /> Copiar y abrir Google Docs</button>}
         <span className="push" />
         <button type="button" className="btn ghost" onClick={() => onSave(null)}>Cancelar</button>
         <button type="button" className="btn primary" disabled={uploading > 0} onClick={() => onSave(final())}>{isNew ? 'Crear tarea' : 'Guardar cambios'}</button>

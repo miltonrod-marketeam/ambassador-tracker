@@ -1,18 +1,18 @@
-import { Trash2, Pencil, Copy, ExternalLink, Camera, CheckCircle2, Send, MessageSquare, AlertTriangle, CalendarCheck } from 'lucide-react';
+import { Trash2, Pencil, Copy, FileText, Trophy, ExternalLink, Camera, CheckCircle2, Send, MessageSquare, AlertTriangle, CalendarCheck } from 'lucide-react';
 import { STATUSES, TASK_BY_CODE, catOf } from '../lib/constants';
-import { dayInfo, todayIso, hasImages, viewsInfo } from '../lib/schedule';
+import { dayInfo, todayIso, hasImages, viewsInfo, goalReached } from '../lib/schedule';
 import { Stamp } from './ui';
 
 const href = (l) => (l.startsWith('http') ? l : `https://${l}`);
 
-export default function TaskCard({ t, onEdit, onDelete, onStatus, onToggle, onCopy }) {
+export default function TaskCard({ t, onEdit, onDelete, onStatus, onToggle, onCopy, onDocs }) {
   const info = dayInfo(t.dateStr);
   const cat = catOf(t.taskCode);
   const comm = t.taskCode === '02';
   const vi = viewsInfo(t);
   const pct = t.requiresViews ? Math.min(100, ((t.views || 0) / (t.targetViews || 300)) * 100) : 0;
   return (
-    <article className={`card ${t.dateStr === todayIso() ? 'is-today' : ''} ${t.status === 'Completado' || t.status === 'Brandchamp' ? 'is-done' : ''}`} data-cat={cat}>
+    <article className={`card ${t.dateStr === todayIso() ? 'is-today' : ''} ${t.status === 'Completado' || t.status === 'Brandchamp' ? 'is-done' : ''}`} data-cat={cat} data-status={t.status}>
       <div className="card-top">
         <span className="date-chip">S{info.week} · {info.dayName} {info.display}</span>
         <span className="pts num">+{comm ? (t.tgPlanned !== false) + (t.dcPlanned !== false) : t.points}</span>
@@ -61,7 +61,8 @@ export default function TaskCard({ t, onEdit, onDelete, onStatus, onToggle, onCo
         <div className="views">
           <div className="views-row"><span>Views en 1 semana</span><b className="num">{t.views || 0} / {t.targetViews || 300}</b></div>
           <div className="bar" data-tone={pct >= 100 ? 'ok' : 'warn'}><i style={{ width: `${pct}%` }} /></div>
-          {vi && <div className={`views-due ${vi.risk || ''}`}>{vi.risk === 'late' ? <AlertTriangle size={12} /> : <CalendarCheck size={12} />} Cumple la semana el {dayInfo(vi.due).display}{vi.risk === 'late' ? ' · después del cierre del mes' : vi.risk === 'tight' ? ' · sin colchón para la captura' : ''}</div>}
+          {goalReached(t) && <div className="views-goal"><Trophy size={13} /> ¡Meta alcanzada!</div>}
+          {vi && !goalReached(t) && <div className={`views-due ${vi.risk || ''}`}>{vi.risk === 'late' ? <AlertTriangle size={12} /> : <CalendarCheck size={12} />} Cumple la semana el {dayInfo(vi.due).display}{vi.risk === 'late' ? ' · después del cierre del mes' : vi.risk === 'tight' ? ' · sin colchón para la captura' : ''}</div>}
         </div>
       )}
 
@@ -70,6 +71,7 @@ export default function TaskCard({ t, onEdit, onDelete, onStatus, onToggle, onCo
         <select id={`st_${t.id}`} className="select sm" value={t.status} onChange={(e) => onStatus(t, e.target.value)} aria-label="Estado">
           {STATUSES.map((s) => <option key={s}>{s}</option>)}
         </select>
+        <button type="button" className="btn ghost sm" onClick={() => onDocs(t)} title="Copia la ficha con capturas y abre un Google Doc en blanco"><FileText size={13} /> Docs</button>
         <button type="button" className="btn primary sm" onClick={() => onEdit(t)}><Pencil size={13} /> Editar</button>
       </div>
     </article>
