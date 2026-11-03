@@ -1,9 +1,8 @@
 import { Trash2, Pencil, Copy, FileText, Trophy, ExternalLink, Camera, CheckCircle2, Send, MessageSquare, AlertTriangle, CalendarCheck } from 'lucide-react';
 import { STATUSES, TASK_BY_CODE, catOf } from '../lib/constants';
-import { dayInfo, todayIso, hasImages, viewsInfo, goalReached } from '../lib/schedule';
+import { dayInfo, todayIso, hasImages, viewsInfo, goalReached, linkHref as href } from '../lib/schedule';
 import { Stamp } from './ui';
 
-const href = (l) => (l.startsWith('http') ? l : `https://${l}`);
 
 export default function TaskCard({ t, onEdit, onDelete, onStatus, onToggle, onCopy, onDocs }) {
   const info = dayInfo(t.dateStr);

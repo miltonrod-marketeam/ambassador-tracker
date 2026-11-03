@@ -145,4 +145,6 @@ export function autoStatus(t, prev) {
   return { ...t, status };
 }
 
+export const linkHref = (l) => (/^https?:\/\//i.test(l) ? l : `https://${l}`);
+
 export const goalReached = (t) => !!t.requiresViews && (t.views || 0) >= (t.targetViews || 300);

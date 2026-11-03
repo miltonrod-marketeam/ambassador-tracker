@@ -1,6 +1,6 @@
 import { FileText, Copy, Star, Eye } from 'lucide-react';
 import { catOf } from '../lib/constants';
-import { dayInfo } from '../lib/schedule';
+import { dayInfo, linkHref } from '../lib/schedule';
 import { Stamp } from '../components/ui';
 
 export const vaultItems = (tasks) => tasks
@@ -35,7 +35,7 @@ export default function Vault({ tasks, onDocAll, onCopyAll, onDoc, onDocs, onUpl
                 <h4 className="card-title">{t.title}</h4>
                 {t.topic && <p className="card-topic">{t.topic}</p>}
                 {t.views > 0 && <p className="small"><Eye size={13} /> {t.views} views</p>}
-                {(t.links || []).map((l, i) => <a key={i} className="vault-link" href={l} target="_blank" rel="noreferrer">{l}</a>)}
+                {(t.links || []).map((l, i) => <a key={i} className="vault-link" href={linkHref(l)} target="_blank" rel="noreferrer">{l}</a>)}
                 {(t.images || []).length > 0 && (
                   <div className="thumbs">{t.images.map((src, i) => <img key={i} src={src} alt={`Captura ${i + 1} de ${t.title}`} loading="lazy" />)}</div>
                 )}
