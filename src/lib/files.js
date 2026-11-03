@@ -1,5 +1,5 @@
 import { TASK_BY_CODE } from './constants';
-import { dayInfo, uid, currentMonth } from './schedule';
+import { dayInfo, uid, currentMonth, linkHref } from './schedule';
 
 export function compressImage(file, maxWidth = 1000, quality = 0.72) {
   return new Promise((resolve, reject) => {
@@ -61,7 +61,7 @@ export function taskHtml(t, n) {
   <p style="font-size:13px;margin:3px 0"><b>Fecha:</b> Semana ${d.week} · ${d.dayName} ${d.display}</p>
   ${t.copy ? `<p style="font-size:13px;margin:6px 0;padding:8px 10px;border-left:3px solid #ea580c;background:#f7f5fb;white-space:pre-wrap">${esc(t.copy)}</p>` : ''}
   ${t.topic ? `<p style="font-size:13px;margin:3px 0"><b>Nota:</b> ${esc(t.topic)}</p>` : ''}
-  ${(t.links || []).length ? `<p style="font-size:13px;margin:3px 0"><b>Enlaces:</b> ${t.links.map((l) => `<a href="${esc(l)}">${esc(l)}</a>`).join(' · ')}</p>` : ''}
+  ${(t.links || []).length ? `<p style="font-size:13px;margin:3px 0"><b>Enlaces:</b> ${t.links.map((l) => `<a href="${esc(linkHref(l))}">${esc(l)}</a>`).join(' · ')}</p>` : ''}
   ${t.views > 0 ? `<p style="font-size:13px;margin:3px 0"><b>Alcance:</b> ${t.views} views</p>` : ''}
   ${(t.images || []).map((src, i) => `<img src="${esc(src)}" alt="Captura ${i + 1}" width="520" style="max-width:520px;display:block;margin:10px 0;border:1px solid #d8d4e6">`).join('')}
 </div>`;

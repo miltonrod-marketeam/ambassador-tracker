@@ -572,3 +572,4 @@ input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius
 .views-goal { display: flex; gap: 6px; align-items: center; font-size: 12px; font-weight: 700; color: var(--st-done); }
 .card-foot { flex-wrap: wrap; }
 .card-foot .select { margin-left: auto; }
+.modal-links { margin: -4px 0 4px; }
