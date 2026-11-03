@@ -17,7 +17,7 @@ export default function Simulator({ cfg, month, onCfg, onGenerate, onZero }) {
               {g.rows.map((r) => {
                 const v = cfg[r.key] || 0;
                 return (
-                  <div key={r.key} className="slider-row" data-cat={catOf(r.code)}>
+                  <div key={r.key} className="slider-row" data-cat={g.cat}>
                     <div className="slider-info">
                       <span className="code-tag">{r.code}</span>
                       <div>

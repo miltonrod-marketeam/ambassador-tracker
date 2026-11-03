@@ -3,7 +3,7 @@ import { Award, Moon, Sun, Download, Upload, LogOut, Cloud, CloudOff, Loader2, S
 import { IS_DEMO, remoteAdapter, demoAdapter } from './lib/api';
 import { useTracker } from './lib/store';
 import { TASK_BY_CODE, tierIndex, ZERO_CFG } from './lib/constants';
-import { generateMonth, newTask, earned, projected, monthLabel, todayIso, currentMonth } from './lib/schedule';
+import { generateMonth, autoStatus, newTask, earned, projected, monthLabel, todayIso, currentMonth } from './lib/schedule';
 import { normalizeBackup, downloadFile, downloadDoc, taskHtml, reportHtml, copyRich, copyText } from './lib/files';
 import { CountUp, Toast, Confirm, Confetti } from './components/ui';
 import RewardPath from './components/RewardPath';
@@ -130,7 +130,7 @@ function Dashboard({ adapter, onAuthLost, theme, toggleTheme }) {
     if (!original) { actions.setSettings({ cfg: bumpCfg(t.taskCode, 1) }); notify(`“${t.title}” agregada`); }
     else {
       if (original.taskCode !== t.taskCode) actions.setSettings({ cfg: bumpCfg(t.taskCode, 1, bumpCfg(original.taskCode, -1)) });
-      notify(`Guardado · ${t.status}`);
+      notify(original.status !== t.status ? `Guardado · estado ahora ${t.status}` : `Guardado · ${t.status}`);
     }
     if (!t.dateStr.startsWith(month)) actions.setSettings({ month: t.dateStr.slice(0, 7) });
   };
@@ -143,12 +143,16 @@ function Dashboard({ adapter, onAuthLost, theme, toggleTheme }) {
     },
   });
 
-  const copyTask = async (t) => {
-    const ok = await copyRich(taskHtml(t), `${t.title}\n${(t.links || []).join('\n')}`);
-    notify(ok ? 'Ficha copiada con sus capturas. Pégala en Google Docs.' : 'No se pudo copiar. Usa la descarga .doc.');
+  // Copia primero (necesita el gesto del clic) y abre un Doc en blanco; el usuario pega
+  const copyAndOpen = async (html, plain, label) => {
+    const copying = copyRich(html, plain);
+    window.open('https://docs.new', '_blank', 'noopener');
+    notify((await copying) ? `${label} copiada. En el Doc en blanco pega con Ctrl/Cmd + V.` : 'No se pudo copiar. Usa la descarga .doc.');
   };
+  const docsTask = (t) => copyAndOpen(taskHtml(t), `${t.title}\n${(t.links || []).join('\n')}`, 'Ficha');
 
   const cardProps = {
+    onDocs: docsTask,
     onEdit: (t) => setEditing({ task: t }),
     onDelete: askDelete,
     onStatus: (t, status) => { actions.saveTasks([{ ...t, status }]); notify(`Estado: ${status}`); },
@@ -273,10 +277,10 @@ function Dashboard({ adapter, onAuthLost, theme, toggleTheme }) {
           {tab === 'vault' && (
             <Vault tasks={monthTasks}
               onDocAll={() => { downloadDoc(`Evidencias Rootstock ${monthLabel(month)}`, reportHtml(vaultItems(monthTasks), real, monthLabel(month))); notify('Reporte .doc descargado'); }}
-              onCopyAll={async () => notify((await copyRich(reportHtml(vaultItems(monthTasks), real, monthLabel(month)), 'Reporte de evidencias')) ? 'Reporte copiado. Pégalo en un Google Doc nuevo.' : 'No se pudo copiar. Usa la descarga .doc.')}
+              onCopyAll={() => copyAndOpen(reportHtml(vaultItems(monthTasks), real, monthLabel(month)), 'Reporte de evidencias', 'Reporte')}
+              onDocs={docsTask}
               onDoc={(t) => { downloadDoc(`Evidencia ${t.taskCode} ${t.title}`, taskHtml(t)); notify('Ficha .doc descargada'); }}
-              onCopy={copyTask}
-              onUploaded={(t) => { actions.saveTasks([{ ...t, status: t.status === 'Brandchamp' ? 'Completado' : 'Brandchamp' }]); }} />
+              onUploaded={(t) => { actions.saveTasks([t.status === 'Brandchamp' ? autoStatus({ ...t, status: 'Programado' }) : { ...t, status: 'Brandchamp' }]); }} />
           )}
           {tab === 'rules' && <Rules />}
         </div>
@@ -289,7 +293,7 @@ function Dashboard({ adapter, onAuthLost, theme, toggleTheme }) {
       {editing && (
         <TaskModal task={editing.task} isNew={editing.isNew} actions={actions} notify={notify}
           onSave={(t) => { if (t) saveTask(t, editing.isNew ? null : editing.task); setEditing(null); }}
-          onDelete={askDelete} onCopy={copyTask}
+          onDelete={askDelete} onCopy={docsTask}
           onDoc={(t) => { downloadDoc(`Evidencia ${t.taskCode} ${t.title}`, taskHtml(t)); notify('Ficha .doc descargada'); }} />
       )}
       {ideaEdit !== undefined && <IdeaModal idea={ideaEdit} onSave={(i) => { if (i) { actions.saveIdea(i); notify('Idea guardada'); } setIdeaEdit(undefined); }} />}

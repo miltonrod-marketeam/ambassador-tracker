@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { DEFAULT_CFG } from './constants';
 import { currentMonth, generateMonth } from './schedule';
+import { sameData } from './same';
 
 const CACHE = 'agt_cache_v2';
 const QUEUE = 'agt_queue_v2';
@@ -12,6 +13,8 @@ const upsert = (list, items) => { const m = new Map(list.map((x) => [x.id, x]));
 export function useTracker(adapter, { onAuthLost }) {
   const [data, setData] = useState(() => read(CACHE));
   const [sync, setSync] = useState('loading');
+  const dataRef = useRef(data);
+  useEffect(() => { dataRef.current = data; }, [data]);
   const queue = useRef(read(QUEUE) || []);
   const busy = useRef(0);
   const settingsTimer = useRef(null);
@@ -53,7 +56,8 @@ export function useTracker(adapter, { onAuthLost }) {
       }
       if (busy.current || queue.current.length) return;
       const next = { tasks: d.tasks, ideas: d.ideas || [], settings: { cfg: { ...DEFAULT_CFG, ...(d.settings?.cfg || {}) }, month: d.settings?.month || currentMonth() } };
-      setData(next); write(CACHE, next); setSync('ok');
+      if (!sameData(dataRef.current, next)) { setData(next); write(CACHE, next); }
+      setSync('ok');
     } catch (e) {
       if (e.status === 401) onAuthLost();
       else setSync('offline');

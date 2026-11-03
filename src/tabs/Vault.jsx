@@ -7,7 +7,7 @@ export const vaultItems = (tasks) => tasks
   .filter((t) => t.taskCode !== '02' && ((t.links || []).length || (t.images || []).length || t.status === 'Completado' || t.status === 'Brandchamp'))
   .sort((a, b) => a.dateStr.localeCompare(b.dateStr));
 
-export default function Vault({ tasks, onDocAll, onCopyAll, onDoc, onCopy, onUploaded }) {
+export default function Vault({ tasks, onDocAll, onCopyAll, onDoc, onDocs, onUploaded }) {
   const items = vaultItems(tasks);
   const pending = items.filter((t) => t.status !== 'Brandchamp').length;
   return (
@@ -19,7 +19,7 @@ export default function Vault({ tasks, onDocAll, onCopyAll, onDoc, onCopy, onUpl
         </div>
         <div className="row-wrap">
           <button type="button" className="btn primary" onClick={onDocAll} disabled={!items.length}><FileText size={15} /> Descargar reporte .doc</button>
-          <button type="button" className="btn ghost" onClick={onCopyAll} disabled={!items.length}><Copy size={15} /> Copiar para Google Docs</button>
+          <button type="button" className="btn ghost" onClick={onCopyAll} disabled={!items.length}><Copy size={15} /> Copiar y abrir Google Docs</button>
         </div>
       </div>
       {items.length ? (
@@ -27,7 +27,7 @@ export default function Vault({ tasks, onDocAll, onCopyAll, onDoc, onCopy, onUpl
           {items.map((t) => {
             const info = dayInfo(t.dateStr);
             return (
-              <article key={t.id} className="vault-item" data-cat={catOf(t.taskCode)}>
+              <article key={t.id} className="vault-item" data-cat={catOf(t.taskCode)} data-status={t.status}>
                 <div className="card-top">
                   <span className="date-chip">{t.taskCode} · S{info.week} · {info.display}</span>
                   <Stamp status={t.status} small />
@@ -41,7 +41,7 @@ export default function Vault({ tasks, onDocAll, onCopyAll, onDoc, onCopy, onUpl
                 )}
                 <div className="card-foot">
                   <button type="button" className="btn ghost sm" onClick={() => onDoc(t)}><FileText size={13} /> .doc</button>
-                  <button type="button" className="btn ghost sm" onClick={() => onCopy(t)}><Copy size={13} /> Copiar</button>
+                  <button type="button" className="btn ghost sm" onClick={() => onDocs(t)}><Copy size={13} /> Copiar y abrir Docs</button>
                   <button type="button" className={`btn sm ${t.status === 'Brandchamp' ? 'brand' : 'primary'}`} onClick={() => onUploaded(t)}>
                     <Star size={13} /> {t.status === 'Brandchamp' ? 'Subido' : 'Marcar subido'}
                   </button>

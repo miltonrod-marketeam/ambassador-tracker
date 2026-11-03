@@ -5,8 +5,8 @@ import { Stamp } from '../components/ui';
 
 function DayTasks({ tasks, onOpen }) {
   return tasks.map((t) => (
-    <button key={t.id} type="button" className={`mini ${t.status === 'Completado' || t.status === 'Brandchamp' ? 'done' : ''}`}
-      data-cat={catOf(t.taskCode)} onClick={(e) => { e.stopPropagation(); onOpen(t); }} title={t.title}>
+    <button key={t.id} type="button" className={`mini ${t.status === 'Completado' ? 'done' : ''}`}
+      data-cat={catOf(t.taskCode)} data-status={t.status} onClick={(e) => { e.stopPropagation(); onOpen(t); }} title={t.title}>
       <span className="mini-t">{t.taskCode === '02' ? 'TG + Discord' : t.title}</span>
       {t.taskCode !== '02' && !hasImages(t) && <AlertTriangle size={11} className="warn-ic" aria-label="Falta captura" />}
     </button>
@@ -66,7 +66,7 @@ export default function Calendar({ tasks, month, onMonth, onOpen, onAdd, onDay }
                   <div className="agenda-date"><b>{info.day}</b><span>{DAY_SHORT[info.dow]}</span></div>
                   <div className="agenda-items">
                     {items.length ? items.map((t) => (
-                      <button key={t.id} type="button" className="agenda-item" data-cat={catOf(t.taskCode)} onClick={() => onOpen(t)}>
+                      <button key={t.id} type="button" className="agenda-item" data-cat={catOf(t.taskCode)} data-status={t.status} onClick={() => onOpen(t)}>
                         <span>{t.taskCode === '02' ? 'Telegram + Discord' : t.title}</span>
                         <Stamp status={t.status} small />
                       </button>

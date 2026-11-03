@@ -125,18 +125,24 @@ export function simTotal(cfg) {
   return { by, total: Object.values(by).reduce((a, b) => a + b, 0) };
 }
 
-// Reglas de estado automáticas al guardar una tarea
-export function autoStatus(t) {
+// Reglas de estado automáticas. Solo se recalculan cuando cambian views, links o tipo,
+// así un cambio manual de estado no se pisa. Brandchamp siempre es manual.
+export function autoStatus(t, prev) {
   if (t.status === 'Brandchamp') return t;
   if (t.taskCode === '02') {
     const pts = earned(t);
     return { ...t, points: pts, status: pts > 0 ? 'Completado' : 'Programado' };
   }
   const hasLinks = (t.links || []).length > 0;
+  const changed = !prev || (t.views || 0) !== (prev.views || 0) || (t.links || []).join('|') !== (prev.links || []).join('|') || t.taskCode !== prev.taskCode;
+  if (!changed) return t;
   let status = t.status;
   if (t.requiresViews) {
     if ((t.views || 0) >= (t.targetViews || 300)) status = 'Completado';
-    else if (hasLinks && status === 'Programado') status = 'Publicado';
+    else if (hasLinks) status = 'Publicado';
+    else if (status === 'Completado') status = 'Programado';
   } else if (hasLinks && status === 'Programado') status = 'Completado';
   return { ...t, status };
 }
+
+export const goalReached = (t) => !!t.requiresViews && (t.views || 0) >= (t.targetViews || 300);
