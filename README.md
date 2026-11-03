@@ -11,10 +11,10 @@ Tracker de puntos del programa de embajadores de Rootstock. React + Vite, con da
    - *Create Database* → **Blob** → conéctalo al proyecto.
    Las variables de ambos se agregan solas.
 4. **Redeploy.** En *Deployments → ⋯ → Redeploy* para que tome las bases de datos.
-5. **Abre tu dominio `.vercel.app`.** La primera vez te pide **crear tu contraseña**. Desde ahí entras con ella en la PC y el celular. No hay variables que pegar.
+5. **Abre tu dominio `.vercel.app`.** La app abre directo, sin contraseña. No compartas la dirección: quien la tenga puede ver y editar tus datos.
 
-### Si olvidas la contraseña
-En Vercel → *Storage* → tu base Redis → *Data Browser*, borra la clave `agt:auth`. La próxima vez que abras la app te deja crear una nueva. Tus datos no se tocan.
+### Volver a pedir contraseña (opcional)
+Agrega la variable `REQUIRE_PASSWORD=1` en Vercel y haz Redeploy. La primera visita te deja crear una contraseña; si la olvidas, borra la clave `agt:auth` en Storage → tu Redis → Browse data.
 
 ## Pasar tus datos de la versión de Gemini
 
@@ -22,7 +22,7 @@ En la app vieja usa **Guardar Copia (.json)**. En la nueva, botón de subir (fle
 
 ## Qué cambió frente a la versión anterior
 
-- Contraseña que creas tú en el primer uso (guardada cifrada) y sesión firmada de 90 días; la clave de sesión se genera sola. Ya no hay clave de sincronización adivinable.
+- Sin contraseña por defecto. Si la quieres, se activa con `REQUIRE_PASSWORD=1` y la creas tú en el primer uso (guardada cifrada).
 - Cada tarea e idea se guarda por separado, así que editar en dos dispositivos ya no se pisa. La app vuelve a leer cada 30 s y al regresar a la pestaña. Si se cae la conexión, los cambios se guardan cuando vuelve.
 - Capturas en Vercel Blob en lugar de base64 dentro del documento.
 - La parrilla generada ahora incluye 08, 10, 12 y 14 y suma exactamente lo mismo que el Planificador.
