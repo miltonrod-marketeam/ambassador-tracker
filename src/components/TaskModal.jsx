@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
-import { Camera, Trash2, Search, FileText, Copy, Loader2 } from 'lucide-react';
+import { Camera, Trash2, Search, FileText, Copy, Loader2, ExternalLink } from 'lucide-react';
 import { TASKS, TASK_BY_CODE, STATUSES, catOf } from '../lib/constants';
-import { autoStatus, dayInfo, viewsInfo } from '../lib/schedule';
+import { autoStatus, dayInfo, viewsInfo, linkHref } from '../lib/schedule';
 import { compressImage } from '../lib/files';
 import { Modal, Field } from './ui';
 
@@ -105,6 +105,11 @@ export default function TaskModal({ task, isNew, actions, onSave, onDelete, onDo
               <textarea id="m_links" rows={3} className="input mono" value={d.linksText} placeholder="https://x.com/MiltonRodM/status/…"
                 onChange={(e) => set({ linksText: e.target.value })} />
             </Field>
+            {links.length > 0 && (
+              <div className="links modal-links">
+                {links.map((l, i) => <a key={i} href={linkHref(l)} target="_blank" rel="noreferrer"><ExternalLink size={12} /><span>{l}</span></a>)}
+              </div>
+            )}
             {xLink && (
               <button type="button" className="btn ghost sm self-start" onClick={scan} disabled={scanning}>
                 {scanning ? <Loader2 size={14} className="spin" /> : <Search size={14} />} Traer texto del post de X
