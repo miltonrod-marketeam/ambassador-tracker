@@ -37,7 +37,8 @@ function useTheme() {
   return [theme, () => setTheme((t) => (t === 'light' ? 'dark' : 'light'))];
 }
 
-function Login({ adapter, setup, onDone, theme, toggleTheme }) {
+function Login({ adapter, setup: setupProp, onDone, theme, toggleTheme }) {
+  const [setup, setSetup] = useState(setupProp);
   const [pw, setPw] = useState(''); const [pw2, setPw2] = useState('');
   const [err, setErr] = useState(''); const [busy, setBusy] = useState(false);
   const [show, setShow] = useState(false);
@@ -48,7 +49,10 @@ function Login({ adapter, setup, onDone, theme, toggleTheme }) {
     <div className="login">
       <form className="login-card" onSubmit={async (e) => {
         e.preventDefault(); if (!ready) return; setBusy(true); setErr('');
-        try { await (setup ? adapter.setup(pw) : adapter.login(pw)); onDone(); } catch (x) { setErr(x.message); }
+        try { await (setup ? adapter.setup(pw) : adapter.login(pw)); onDone(); } catch (x) {
+          // La contraseña ya existe: pasa a "Entrar" para usar la que se creó antes
+          if (setup && x.status === 409) { setSetup(false); setPw(''); setPw2(''); setErr('Ya hay una contraseña creada. Escríbela aquí para entrar.'); } else setErr(x.message);
+        }
         setBusy(false);
       }}>
         <div className="brand-mark big"><Award size={28} /></div>
