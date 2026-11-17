@@ -67,6 +67,8 @@ export const hasPassword = async () => !!(await redis.get(AUTH_KEY));
 export async function createPassword(password) {
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.scryptSync(String(password), salt, 64).toString('hex');
+  // Una clave que existe pero está vacía (por ejemplo, si se vació a mano) no cuenta como contraseña
+  if (!(await redis.get(AUTH_KEY))) await redis.del(AUTH_KEY);
   const res = await redis.set(AUTH_KEY, `${salt}:${hash}`, { nx: true });
   return res !== null; // false si alguien ya la había creado
 }
